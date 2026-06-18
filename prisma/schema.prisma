@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  FUNCIONARIA
+}
+
+enum StatusAgendamento {
+  AGENDADO
+  CONFIRMADO
+  CONCLUIDO
+  CANCELADO
+}
+
+model Usuario {
+  id           String   @id @default(cuid())
+  nome         String
+  email        String   @unique
+  senhaHash    String
+  role         Role     @default(FUNCIONARIA)
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  funcionaria Funcionaria?
+
+  @@map("usuarios")
+}
+
+model Funcionaria {
+  id           String   @id @default(cuid())
+  usuarioId    String   @unique
+  usuario      Usuario  @relation(fields: [usuarioId], references: [id])
+  telefone     String?
+  fotoPerfil   String?
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  horarios            HorarioTrabalho[]
+  agendamentos        Agendamento[]
+  servicos            FuncionariaServico[]
+  agendamentoClientes AgendamentoCliente[]
+
+  @@map("funcionarias")
+}
+
+model HorarioTrabalho {
+  id            String      @id @default(cuid())
+  funcionariaId String
+  funcionaria   Funcionaria @relation(fields: [funcionariaId], references: [id])
+  diaSemana     Int // 0=Domingo, 1=Segunda, ..., 6=Sábado
+  horaInicio    String // formato "HH:mm", ex: "08:00"
+  horaFim       String // formato "HH:mm", ex: "18:00"
+  ativo         Boolean     @default(true)
+
+  @@map("horarios_trabalho")
+}
+
+model Servico {
+  id             String   @id @default(cuid())
+  nome           String
+  descricao      String?
+  duracaoMinutos Int
+  preco          Decimal  @db.Decimal(10, 2)
+  ativo          Boolean  @default(true)
+  criadoEm       DateTime @default(now())
+  atualizadoEm   DateTime @updatedAt
+
+  funcionarias        FuncionariaServico[]
+  agendamentos        Agendamento[]
+  agendamentoClientes AgendamentoCliente[]
+
+  @@map("servicos")
+}
+
+model FuncionariaServico {
+  funcionariaId String
+  servicoId     String
+  funcionaria   Funcionaria @relation(fields: [funcionariaId], references: [id])
+  servico       Servico     @relation(fields: [servicoId], references: [id])
+
+  @@id([funcionariaId, servicoId])
+  @@map("funcionarias_servicos")
+}
+
+model Cliente {
+  id           String   @id @default(cuid())
+  nome         String
+  telefone     String?
+  email        String?
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  agendamentos Agendamento[]
+
+  @@map("clientes")
+}
+
+model Agendamento {
+  id             String            @id @default(cuid())
+  clienteId      String
+  cliente        Cliente           @relation(fields: [clienteId], references: [id])
+  funcionariaId  String
+  funcionaria    Funcionaria       @relation(fields: [funcionariaId], references: [id])
+  servicoId      String
+  servico        Servico           @relation(fields: [servicoId], references: [id])
+  dataHoraInicio DateTime
+  dataHoraFim    DateTime
+  status         StatusAgendamento @default(AGENDADO)
+  observacao     String?
+  criadoEm       DateTime          @default(now())
+  atualizadoEm   DateTime          @updatedAt
+
+  @@map("agendamentos")
+}
+
+model ClienteAuth {
+  id           String   @id @default(cuid())
+  nome         String
+  email        String   @unique
+  telefone     String?
+  senhaHash    String
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  agendamentos AgendamentoCliente[]
+
+  @@map("clientes_auth")
+}
+
+model AgendamentoCliente {
+  id             String            @id @default(cuid())
+  clienteId      String
+  cliente        ClienteAuth       @relation(fields: [clienteId], references: [id])
+  funcionariaId  String
+  funcionaria    Funcionaria       @relation(fields: [funcionariaId], references: [id])
+  servicoId      String
+  servico        Servico           @relation(fields: [servicoId], references: [id])
+  dataHoraInicio DateTime
+  dataHoraFim    DateTime
+  status         StatusAgendamento @default(AGENDADO)
+  observacao     String?
+  criadoEm       DateTime          @default(now())
+  atualizadoEm   DateTime          @updatedAt
+
+  @@map("agendamentos_cliente")
+}
