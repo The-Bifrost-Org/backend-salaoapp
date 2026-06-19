@@ -86,11 +86,47 @@ export class AgendamentosService {
       where.dataHoraInicio = { gte: inicio, lte: fim };
     }
 
-    return this.prisma.agendamento.findMany({
+    // busca agendamentos internos
+    const agendamentosInternos = await this.prisma.agendamento.findMany({
       where,
       orderBy: { dataHoraInicio: 'asc' },
       include: this.includeCompleto(),
     });
+
+    // busca agendamentos do portal do cliente
+    const agendamentosCliente = await this.prisma.agendamentoCliente.findMany({
+      where,
+      orderBy: { dataHoraInicio: 'asc' },
+      include: {
+        cliente: { select: { id: true, nome: true, telefone: true } },
+        funcionaria: {
+          include: {
+            usuario: { select: { id: true, nome: true } },
+          },
+        },
+        servico: {
+          select: { id: true, nome: true, duracaoMinutos: true, preco: true },
+        },
+      },
+    });
+
+    // normaliza os agendamentos do cliente para o mesmo formato
+    const clienteNormalizados = agendamentosCliente.map((a) => ({
+      ...a,
+      origem: 'cliente',
+    }));
+
+    const internosNormalizados = agendamentosInternos.map((a) => ({
+      ...a,
+      origem: 'interno',
+    }));
+
+    // junta e ordena por hora
+    return [...internosNormalizados, ...clienteNormalizados].sort(
+      (a, b) =>
+        new Date(a.dataHoraInicio).getTime() -
+        new Date(b.dataHoraInicio).getTime(),
+    );
   }
 
   async findOne(id: string) {
