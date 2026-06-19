@@ -9,9 +9,22 @@ import { ServicosModule } from './servicos/servicos.module';
 import { ClientesModule } from './clientes/clientes.module';
 import { AgendamentosModule } from './agendamentos/agendamentos.module';
 import { PublicoModule } from './publico/publico.module';
+import { ConfiguracoesModule } from './configuracoes/configuracoes.module';
+import { GaleriaModule } from './galeria/galeria.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, AuthModule, FuncionariasModule, ServicosModule, ClientesModule, AgendamentosModule, PublicoModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
+    AuthModule,
+    FuncionariasModule,
+    ServicosModule,
+    ClientesModule,
+    AgendamentosModule,
+    PublicoModule,
+    ConfiguracoesModule,
+    GaleriaModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

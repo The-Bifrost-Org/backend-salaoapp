@@ -7,7 +7,11 @@ import {
   Body,
   Param,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { ServicosService } from './servicos.service';
 import { CreateServicoDto } from './dto/create-servico.dto';
 import { UpdateServicoDto } from './dto/update-servico.dto';
@@ -46,5 +50,12 @@ export class ServicosController {
   @Roles('ADMIN')
   remove(@Param('id') id: string) {
     return this.servicosService.remove(id);
+  }
+
+  @Post(':id/imagem')
+  @Roles('ADMIN')
+  @UseInterceptors(FileInterceptor('file', { storage: memoryStorage() }))
+  uploadImagem(@Param('id') id: string, @UploadedFile() file: any) {
+    return this.servicosService.uploadImagem(id, file);
   }
 }

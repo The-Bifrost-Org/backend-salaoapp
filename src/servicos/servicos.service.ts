@@ -2,10 +2,17 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateServicoDto } from './dto/create-servico.dto';
 import { UpdateServicoDto } from './dto/update-servico.dto';
+import {
+  CloudinaryService,
+  UploadFile,
+} from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class ServicosService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private cloudinary: CloudinaryService,
+  ) {}
 
   async create(dto: CreateServicoDto) {
     return this.prisma.servico.create({
@@ -51,7 +58,7 @@ export class ServicosService {
   }
 
   async update(id: string, dto: UpdateServicoDto) {
-    await this.findOne(id); // garante que existe
+    await this.findOne(id);
 
     return this.prisma.servico.update({
       where: { id },
@@ -66,12 +73,22 @@ export class ServicosService {
   }
 
   async remove(id: string) {
-    await this.findOne(id); // garante que existe
+    await this.findOne(id);
 
-    // soft delete
     return this.prisma.servico.update({
       where: { id },
       data: { ativo: false },
+    });
+  }
+
+  async uploadImagem(id: string, file: UploadFile) {
+    await this.findOne(id);
+
+    const url = await this.cloudinary.uploadImagem(file, 'servicos');
+
+    return this.prisma.servico.update({
+      where: { id },
+      data: { imagemUrl: url },
     });
   }
 }
