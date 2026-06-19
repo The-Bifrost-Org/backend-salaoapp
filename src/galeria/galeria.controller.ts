@@ -18,15 +18,22 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('galeria')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class GaleriaController {
   constructor(private readonly galeriaService: GaleriaService) {}
 
+  // rota pública — sem JWT
+  @Get('publica')
+  findAllPublica(@Query('categoria') categoria?: string) {
+    return this.galeriaService.findAll(categoria);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
   findAll(@Query('categoria') categoria?: string) {
     return this.galeriaService.findAll(categoria);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('upload')
   @Roles('ADMIN')
   @UseInterceptors(FileInterceptor('file', { storage: memoryStorage() }))
@@ -38,6 +45,7 @@ export class GaleriaController {
     return this.galeriaService.upload(file, titulo, categoria);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete(':id')
   @Roles('ADMIN')
   remove(@Param('id') id: string) {
