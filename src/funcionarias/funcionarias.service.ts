@@ -173,7 +173,13 @@ export class FuncionariasService {
 
   async atualizarHorarios(
     id: string,
-    horarios: { diaSemana: number; horaInicio: string; horaFim: string }[],
+    horarios: {
+      diaSemana: number;
+      horaInicio: string;
+      horaFim: string;
+      inicioAlmoco?: string;
+      fimAlmoco?: string;
+    }[],
   ) {
     await this.findOne(id);
 
@@ -188,6 +194,8 @@ export class FuncionariasService {
           diaSemana: h.diaSemana,
           horaInicio: h.horaInicio,
           horaFim: h.horaFim,
+          inicioAlmoco: h.inicioAlmoco || null,
+          fimAlmoco: h.fimAlmoco || null,
           ativo: true,
         })),
       });

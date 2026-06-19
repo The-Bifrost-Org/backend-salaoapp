@@ -59,6 +59,8 @@ model HorarioTrabalho {
   diaSemana     Int // 0=Domingo, 1=Segunda, ..., 6=Sábado
   horaInicio    String // formato "HH:mm", ex: "08:00"
   horaFim       String // formato "HH:mm", ex: "18:00"
+  inicioAlmoco  String?     // "12:00"
+  fimAlmoco     String?     // "13:00"
   ativo         Boolean     @default(true)
 
   @@map("horarios_trabalho")

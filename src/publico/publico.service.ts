@@ -182,9 +182,22 @@ export class PublicoService {
       min + duracao <= fimExpediente;
       min += 30
     ) {
-      const slotInicio = new Date(
-        `${data}T${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}:00`,
-      );
+      const hh = String(Math.floor(min / 60)).padStart(2, '0');
+      const mm = String(min % 60).padStart(2, '0');
+
+      if (horario.inicioAlmoco && horario.fimAlmoco) {
+        const [hAlmIni, mAlmIni] = horario.inicioAlmoco.split(':').map(Number);
+        const [hAlmFim, mAlmFim] = horario.fimAlmoco.split(':').map(Number);
+        const almocIni = hAlmIni * 60 + mAlmIni;
+        const almocFim = hAlmFim * 60 + mAlmFim;
+        const slotFimMin = min + duracao;
+
+        if (min < almocFim && slotFimMin > almocIni) {
+          continue;
+        }
+      }
+
+      const slotInicio = new Date(`${data}T${hh}:${mm}:00-03:00`);
       const slotFim = new Date(slotInicio.getTime() + duracao * 60000);
 
       const ocupado = todosAgendamentos.some(
