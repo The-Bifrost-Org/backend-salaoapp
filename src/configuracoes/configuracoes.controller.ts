@@ -16,15 +16,21 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('configuracoes')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class ConfiguracoesController {
   constructor(private readonly configuracoesService: ConfiguracoesService) {}
 
+  @Get('publica')
+  buscarPublica() {
+    return this.configuracoesService.buscar();
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
   buscar() {
     return this.configuracoesService.buscar();
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Put()
   @Roles('ADMIN')
   atualizar(
@@ -39,6 +45,7 @@ export class ConfiguracoesController {
     return this.configuracoesService.atualizar(body);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('logo')
   @Roles('ADMIN')
   @UseInterceptors(FileInterceptor('file', { storage: memoryStorage() }))
