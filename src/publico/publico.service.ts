@@ -102,6 +102,7 @@ export class PublicoService {
         descricao: true,
         duracaoMinutos: true,
         preco: true,
+        imagemUrl: true,
       },
     });
   }
