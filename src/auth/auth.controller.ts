@@ -5,6 +5,7 @@ import {
   Request,
   UseGuards,
   Get,
+  Put,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
@@ -30,5 +31,14 @@ export class AuthController {
   @Get('me')
   async me(@Request() req) {
     return req.user;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('perfil')
+  async atualizarPerfil(
+    @Request() req,
+    @Body() body: { nome?: string; senhaAtual?: string; novaSenha?: string },
+  ) {
+    return this.authService.atualizarPerfil(req.user.id, body);
   }
 }

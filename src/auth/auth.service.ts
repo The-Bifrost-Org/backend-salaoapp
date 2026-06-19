@@ -82,4 +82,41 @@ export class AuthService {
       throw new UnauthorizedException('Refresh token inválido ou expirado');
     }
   }
+
+  async atualizarPerfil(
+    usuarioId: string,
+    dados: { nome?: string; senhaAtual?: string; novaSenha?: string },
+  ) {
+    const usuario = await this.prisma.usuario.findUnique({
+      where: { id: usuarioId },
+    });
+
+    if (!usuario) throw new UnauthorizedException('Usuário não encontrado');
+
+    if (dados.novaSenha) {
+      if (!dados.senhaAtual) {
+        throw new BadRequestException('Senha atual é obrigatória');
+      }
+      const senhaValida = await bcrypt.compare(
+        dados.senhaAtual,
+        usuario.senhaHash,
+      );
+      if (!senhaValida) {
+        throw new BadRequestException('Senha atual incorreta');
+      }
+    }
+
+    const senhaHash = dados.novaSenha
+      ? await bcrypt.hash(dados.novaSenha, 12)
+      : undefined;
+
+    return this.prisma.usuario.update({
+      where: { id: usuarioId },
+      data: {
+        ...(dados.nome && { nome: dados.nome }),
+        ...(senhaHash && { senhaHash }),
+      },
+      select: { id: true, nome: true, email: true, role: true },
+    });
+  }
 }
